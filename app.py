@@ -70,13 +70,24 @@ def initdb(drop):
     click.echo('Initialized database.')  # 输出提示信息
 
 
-@app.route('/')
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
+
+
+@app.route('/about')
 def hello():
     return '<h1>Hello Totoro!</h1><img src="http://helloflask.com/totoro.gif">'
 
 
-@app.route('/list')
+@app.route('/')
 def index():
-    name = User.query.first().name
     movies = Movie.query.all()
-    return render_template('index.html', name=escape(name), movies=movies)
+    return render_template('index.html', movies=movies)
+
+
+@app.errorhandler(404)  # 传入要处理的错误代码
+def page_not_found(e):  # 接受异常对象作为参数
+    user = User.query.first()
+    return render_template('404.html'), 404  # 返回模板和状态码
